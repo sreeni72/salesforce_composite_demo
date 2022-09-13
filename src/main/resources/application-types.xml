@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="recordsobjecttree" format="json">
+      <types:shape format="weave" example="recordsobjecttree.json"><![CDATA[%dw 2.0
+
+type recordsobjecttree = {|
+  records: Array<{|    attributes: {|      objectType: String,       referenceId: String    |},     name: String,     phone: String,     website: String,     numberOfEmployees: String,     industry: String,     contacts: {|      records: Array<{|        attributes: {|          objectType: String,           referenceId: String        |},         lastName: String,         title: String,         email: String      |}>
+    |}, 
+    childAccounts: {|
+      records: Array<{|        attributes: {|          objectType: String,           referenceId: String        |},         name: String,         phone: String,         website: String,         numberOfEmployees: String,         industry: String      |}>
+    |}
+  |}>
+|} {"example": "{\\\"records\\\":[{\\\"attributes\\\":{\\\"objectType\\\":\\\"Account\\\",\\\"referenceId\\\":\\\"ref1\\\"},\\\"name\\\":\\\"sampleAccount1\\\",\\\"phone\\\":\\\"1234567890\\\",\\\"website\\\":\\\"www.salesforce.com\\\",\\\"numberOfEmployees\\\":\\\"100\\\",\\\"industry\\\":\\\"Banking\\\",\\\"contacts\\\":{\\\"records\\\":[{\\\"attributes\\\":{\\\"objectType\\\":\\\"Contact\\\",\\\"referenceId\\\":\\\"ref2\\\"},\\\"lastName\\\":\\\"Smith\\\",\\\"title\\\":\\\"President\\\",\\\"email\\\":\\\"sample@salesforce.com\\\"},{\\\"attributes\\\":{\\\"objectType\\\":\\\"Contact\\\",\\\"referenceId\\\":\\\"ref3\\\"},\\\"lastName\\\":\\\"Evans\\\",\\\"title\\\":\\\"Vice President\\\",\\\"email\\\":\\\"sample@salesforce.com\\\"}]}},{\\\"attributes\\\":{\\\"objectType\\\":\\\"Account\\\",\\\"referenceId\\\":\\\"ref4\\\"},\\\"name\\\":\\\"SampleAccount2\\\",\\\"phone\\\":\\\"1234567890\\\",\\\"website\\\":\\\"www.salesforce.com\\\",\\\"numberOfEmployees\\\":\\\"52000\\\",\\\"industry\\\":\\\"Banking\\\",\\\"childAccounts\\\":{\\\"records\\\":[{\\\"attributes\\\":{\\\"objectType\\\":\\\"Account\\\",\\\"referenceId\\\":\\\"ref5\\\"},\\\"name\\\":\\\"SampleChildAccount2\\\",\\\"phone\\\":\\\"1234567890\\\",\\\"website\\\":\\\"www.salesforce.com\\\",\\\"numberOfEmployees\\\":\\\"100\\\",\\\"industry\\\":\\\"Banking\\\"}]},\\\"contacts\\\":{\\\"records\\\":[{\\\"attributes\\\":{\\\"objectType\\\":\\\"Contact\\\",\\\"referenceId\\\":\\\"ref6\\\"},\\\"lastName\\\":\\\"Jones\\\",\\\"firstName\\\":\\\"Michelle\\\",\\\"title\\\":\\\"President\\\",\\\"email\\\":\\\"sample@salesforce.com\\\",\\\"department\\\":\\\"Digital Apps\\\"}]}}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="composite" format="json">
+      <types:shape format="weave" example="sample.json"><![CDATA[%dw 2.0
+
+type composite = Array<{|  method: String,   url: String,   body: {|    records: Array<{|      attributes: {| "type": String |},       Name: String,       BillingCity: String    |}>
+  |}, 
+  referenceId: String
+|}> {"example": "[{\\\"method\\\":\\\"POST\\\",\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/composite\\/sobjects\\\",\\\"body\\\":{\\\"records\\\":[{\\\"attributes\\\":{\\\"type\\\":\\\"Account\\\"},\\\"Name\\\":\\\"Northern Trail Outfitters\\\",\\\"BillingCity\\\":\\\"San Francisco\\\"},{\\\"attributes\\\":{\\\"type\\\":\\\"Account\\\"},\\\"Name\\\":\\\"Easy Spaces\\\",\\\"BillingCity\\\":\\\"Calgary\\\"}]},\\\"referenceId\\\":\\\"newAccounts\\\"},{\\\"method\\\":\\\"POST\\\",\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/sObject\\/Contact\\\",\\\"body\\\":{\\\"FirstName\\\":\\\"John\\\",\\\"LastName\\\":\\\"Smith\\\"},\\\"referenceId\\\":\\\"newContact\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="graph" format="json">
+      <types:shape format="weave" example="graph.json"><![CDATA[%dw 2.0
+
+type graph = {|
+  graphs: Array<{|    graphId: String,     compositeRequest: Array<{|      url: String,       body: {| name: String |},       method: String,       referenceId: String    |}>
+  |}>
+|} {"example": "{\\\"graphs\\\":[{\\\"graphId\\\":\\\"1\\\",\\\"compositeRequest\\\":[{\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/sobjects\\/Account\\/\\\",\\\"body\\\":{\\\"name\\\":\\\"Cloudy Consulting\\\"},\\\"method\\\":\\\"POST\\\",\\\"referenceId\\\":\\\"reference_id_account_1\\\"},{\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/sobjects\\/Contact\\/\\\",\\\"body\\\":{\\\"FirstName\\\":\\\"Nellie\\\",\\\"LastName\\\":\\\"Cashman\\\",\\\"AccountId\\\":\\\"@{reference_id_account_1.id}\\\"},\\\"method\\\":\\\"POST\\\",\\\"referenceId\\\":\\\"reference_id_contact_1\\\"},{\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/sobjects\\/Opportunity\\/\\\",\\\"body\\\":{\\\"CloseDate\\\":\\\"2024-05-22\\\",\\\"StageName\\\":\\\"Prospecting\\\",\\\"Name\\\":\\\"Opportunity 1\\\",\\\"AccountId\\\":\\\"@{reference_id_account_1.id}\\\"},\\\"method\\\":\\\"POST\\\",\\\"referenceId\\\":\\\"reference_id_opportunity_1\\\"}]},{\\\"graphId\\\":\\\"2\\\",\\\"compositeRequest\\\":[{\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/sobjects\\/Account\\/\\\",\\\"body\\\":{\\\"name\\\":\\\"Easy Spaces\\\"},\\\"method\\\":\\\"POST\\\",\\\"referenceId\\\":\\\"reference_id_account_2\\\"},{\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/sobjects\\/Contact\\/\\\",\\\"body\\\":{\\\"FirstName\\\":\\\"Charlie\\\",\\\"LastName\\\":\\\"Dawson\\\",\\\"AccountId\\\":\\\"@{reference_id_account_2.id}\\\"},\\\"method\\\":\\\"POST\\\",\\\"referenceId\\\":\\\"reference_id_contact_2\\\"}]}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="setOfCompositeReq" format="json">
+      <types:shape format="weave" example="setOfCompositeReq.json"><![CDATA[%dw 2.0
+
+type setOfCompositeReq = {|
+  compositeRequest: Array<{|    url: String,     body: {| name: String |},     method: String,     referenceId: String  |}>
+|} {"example": "{\\\"compositeRequest\\\":[{\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/sobjects\\/Account\\/\\\",\\\"body\\\":{\\\"name\\\":\\\"Cloudy Consulting\\\"},\\\"method\\\":\\\"POST\\\",\\\"referenceId\\\":\\\"reference_id_account_1\\\"},{\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/sobjects\\/Contact\\/\\\",\\\"body\\\":{\\\"FirstName\\\":\\\"Nellie\\\",\\\"LastName\\\":\\\"Cashman\\\",\\\"AccountId\\\":\\\"@{reference_id_account_1.id}\\\"},\\\"method\\\":\\\"POST\\\",\\\"referenceId\\\":\\\"reference_id_contact_1\\\"},{\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/sobjects\\/Opportunity\\/\\\",\\\"body\\\":{\\\"CloseDate\\\":\\\"2024-05-22\\\",\\\"StageName\\\":\\\"Prospecting\\\",\\\"Name\\\":\\\"Opportunity 1\\\",\\\"AccountId\\\":\\\"@{reference_id_account_1.id}\\\"},\\\"method\\\":\\\"POST\\\",\\\"referenceId\\\":\\\"reference_id_opportunity_1\\\"}]}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="executebatch" format="json">
+      <types:shape format="weave" example="executebatch.json"><![CDATA[%dw 2.0
+
+type executebatch = {|
+  batchRequests: Array<{|    method: String,     url: String,     richInput: {| Name: String |}  |}>
+|} {"example": "{\\\"batchRequests\\\":[{\\\"method\\\":\\\"PATCH\\\",\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/sobjects\\/Account\\/0017F00002h6BAjQAM\\\",\\\"richInput\\\":{\\\"Name\\\":\\\"Azure Offerings\\\"}},{\\\"method\\\":\\\"GET\\\",\\\"url\\\":\\\"\\/services\\/data\\/v50.0\\/sobjects\\/Account\\/0017F00002h6BAjQAM?fields=Name,BillingPostalCode\\\"}]}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#4d59533f-143f-47e4-a45a-9155de9b0839">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="recordsobjecttree"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#467ceebd-f63d-4ce2-b6ac-e0566fc5a655">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="composite"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#c939e495-96e9-462d-82c8-a81c541cd690">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="setOfCompositeReq"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="graph[]"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#60196def-fa49-4b8c-a1d3-fc9e959d94c8">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="executebatch"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="executebatch"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

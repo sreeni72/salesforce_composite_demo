@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jira="http://www.mulesoft.org/schema/mule/jira"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:salesforce-composite="http://www.mulesoft.org/schema/mule/salesforce-composite" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce-composite http://www.mulesoft.org/schema/mule/salesforce-composite/current/mule-salesforce-composite.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/jira http://www.mulesoft.org/schema/mule/jira/current/mule-jira.xsd">
+	<salesforce-composite:composite-config name="Salesforce_Composite_Config" doc:name="Salesforce Composite Config" doc:id="5a4464ad-a954-4b14-8040-0e7823197c14" >
+		<salesforce-composite:oauth-user-pass-connection consumerKey="${secure::sfdc.consumerkey}" consumerSecret="${secure::sfdc.consumersecret}" username="${sfdc.username}" password="${secure::sfdc.password}" securityToken="${secure::sfdc.securitytoken}" tokenEndpoint="${sfdc.tokenendpoint}"/>
+	</salesforce-composite:composite-config>
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d17d44d8-7309-44d5-9979-46959c6cf672" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="ee4a8dc6-26ff-43c9-846c-c52a368aa74d" >
+		<salesforce:basic-connection username="${sfdc.username}" password="${secure::sfdc.password}" securityToken="${secure::sfdc.securitytoken}" url="${sfdc.authorizationurl}" />
+	</salesforce:sfdc-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="0c390ec2-03ba-4111-a3d4-7ff18e01aaf2" file="common.properties" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="2a047d89-c4f3-41a3-81f1-e5737ccbd9de" file="common.properties" key="mule" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<flow name="salesforce_composite_executecompositeReq" doc:id="0c1e0438-fdda-4f84-9b2e-f3c52c58a8cd">
+		<http:listener doc:name="Listener" doc:id="2b5abbea-abdb-4b14-b69c-18448029d1f7" config-ref="HTTP_Listener_config" path="/compositereq" allowedMethods="POST" />
+		<ee:transform doc:name="Transform Message" doc:id="467ceebd-f63d-4ce2-b6ac-e0566fc5a655">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	compositeRequest: payload map ( payload01 , indexOfPayload01 ) -> {
+		method: payload01.method,
+		referenceId: payload01.referenceId,
+		url: payload01.url,
+		body: payload01.body
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce-composite:execute-composite-request doc:name="Execute composite request" doc:id="4ef7ea3e-2086-493e-ba48-d185e9ea4a92" config-ref="Salesforce_Composite_Config">
+		</salesforce-composite:execute-composite-request>
+		<logger level="INFO" doc:name="Logger" doc:id="29354a95-89e2-4769-9df1-be1e6d79e88a" message="#[payload]" />
+	</flow>
+	<flow name="salesforce_composite_executegraph" doc:id="585b3669-6937-4f83-9341-69fc94932dda" >
+		<http:listener doc:name="Listener" doc:id="d02cbe1c-46d7-456b-8073-696f3bc477c2" config-ref="HTTP_Listener_config" path="/executegraph"/>
+		<ee:transform doc:name="Transform Message" doc:id="c939e495-96e9-462d-82c8-a81c541cd690" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce-composite:execute-composite-graph doc:name="Execute composite graph" doc:id="6d054bdd-e0d3-4666-984f-3c34e0d4823a" config-ref="Salesforce_Composite_Config">
+		</salesforce-composite:execute-composite-graph>
+		<logger level="INFO" doc:name="Logger" doc:id="45b8d853-322e-4e0e-8932-eb70002ae667" message="#[payload]"/>
+	</flow>
+	<flow name="salesforce_composite_executebatch" doc:id="0bb3f209-2104-4d2d-9c9c-5abc2da50c67" >
+		<http:listener doc:name="Listener" doc:id="46008035-2b0f-4ec8-9420-c4c858acfb4e" config-ref="HTTP_Listener_config" path="/executebatch" allowedMethods="POST"/>
+		<ee:transform doc:name="Transform Message" doc:id="60196def-fa49-4b8c-a1d3-fc9e959d94c8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce-composite:execute-composite-batch doc:name="Execute composite batch" doc:id="ae3c3d34-ffdc-421d-909f-bd9094573d13" config-ref="Salesforce_Composite_Config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="29ed59a4-407e-4bb4-9c5e-ce8e4ac7fc9b" />
+	</flow>
+	<flow name="salesforce_composite_demoFlow" doc:id="59e2b751-b7c0-4c80-a826-be591c57a4a1" >
+		<http:listener doc:name="Listener" doc:id="054d8415-f066-4ad6-9f52-0c7c3694aecb" config-ref="HTTP_Listener_config" path="/getsobjectcollections"/>
+		<set-payload value='#[{
+  "hasErrors": false,
+  "results": [
+    {
+      "referenceId": "ref1",
+      "id": "0017F00002h6CLiQAM"
+    },
+    {
+      "referenceId": "ref4",
+      "id": "0017F00002h6CLjQAM"
+    },
+    {
+      "referenceId": "ref2",
+      "id": "0037F00002E9oltQAB"
+    },
+    {
+      "referenceId": "ref3",
+      "id": "0037F00002E9oluQAB"
+    },
+    {
+      "referenceId": "ref5",
+      "id": "0017F00002h6CLkQAM"
+    },
+    {
+      "referenceId": "ref6",
+      "id": "0037F00002E9olvQAB"
+    }
+  ]
+}]' doc:name="Set Payload" doc:id="a35c7f35-8bc9-452b-9115-b0c96fea41be" />
+		<salesforce-composite:get-sobject-collections doc:name="Get sobject collections" doc:id="5634d57a-b6e6-4f69-a89c-f9263373d01b" config-ref="Salesforce_Composite_Config" type='#["Contact"]' ids="#[payload.results.id]">
+			<salesforce-composite:fields>
+				<salesforce-composite:field value="Name" />
+				<salesforce-composite:field value="Phone" />
+			</salesforce-composite:fields>
+		</salesforce-composite:get-sobject-collections>
+	</flow>
+	<flow name="composite-create-sobject-tree">
+		<http:listener doc:name="post /recordssobjecttree" path="/recordssobjecttree" config-ref="HTTP_Listener_config" />
+		<ee:transform doc:name="Prepare Request for Create SObject Tree SFDC" doc:id="4d59533f-143f-47e4-a45a-9155de9b0839">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload.records map ((account , indexOfAccount) -> {
+	attributes: {
+		"type": account.attributes.objectType,
+		referenceId: account.attributes.referenceId
+	},
+	Name: account.name,
+	Phone: account.phone,
+	Website: account.website,
+	NumberOfEmployees: account.numberOfEmployees as Number,
+	ChildAccounts: if (account.childAccounts.records != null) {
+		records: account.childAccounts.records map ((childAccount, indexOfChildAccount) -> {
+			attributes: {
+				"type": childAccount.attributes.objectType,
+				referenceId: childAccount.attributes.referenceId
+			},
+			Name: childAccount.name,
+			Phone: childAccount.phone,
+			Website: childAccount.website,
+			NumberOfEmployees: childAccount.numberOfEmployees as Number
+		})
+	} else {} ,
+	Contacts: {
+		records: account.contacts.records map ((contact, indexOfContact) -> {
+			attributes: {
+				"type": contact.attributes.objectType,
+				referenceId: contact.attributes.referenceId
+			},
+			LastName: contact.lastName,
+			Email: contact.email,
+			Title: contact.title
+		})
+	}
+})
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce-composite:create-sobject-tree doc:name="Create Sobject Tree" config-ref="Salesforce_Composite_Config" type="Account">
+		</salesforce-composite:create-sobject-tree>
+		<ee:transform doc:name="Map Response">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="d8bd7878-3e4b-42ae-9bf6-14aacb94317a" message="#[payload]"/>
+	
+</flow>
+	<flow name="salesforce_composite_cresobjectcollections" doc:id="5cf88069-a0c4-4e80-82c2-fbeea363fe36" >
+		<http:listener doc:name="Listener" doc:id="260a70df-eb6d-40a2-b3b6-ec67f8d78bc9" config-ref="HTTP_Listener_config" path="/createsobjectcollections" allowedMethods="POST"/>
+		<ee:transform doc:name="Transform Message" doc:id="19a9afd9-109c-415e-8d0d-9dd0af984215" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="incomingRec" ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<salesforce-composite:create-sobject-collections doc:name="Create sobject collections" doc:id="93d9c7e1-dec8-44fb-9615-12abe6e06f0e" config-ref="Salesforce_Composite_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="bb7e3c7e-8aa5-403d-8dce-0436bafe96b3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="0c106520-aae9-4390-98e5-cb5f98707af1" message="#[payload]"/>
+	</flow>
+	<flow name="composite-prequery-exampleFlow" >
+      <http:listener doc:name="Listener" config-ref="HTTP_Listener_config" path="/executeFlow"/>
+      <ee:transform doc:name="Transform Message" >
+         <ee:message >
+            <ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+   Name: "MyNewAccount1"
+}]]></ee:set-payload>
+         </ee:message>
+      </ee:transform>
+      <salesforce-composite:pre-create type="Account" doc:name="Pre create" config-ref="Salesforce_Composite_Config">
+      </salesforce-composite:pre-create>
+      <ee:transform doc:name="Transform Message" >
+         <ee:message >
+            <ee:set-payload ><![CDATA[output application/java
+---
+{
+   "Id": payload.Id,
+   "Fields" : ["Id", "Name"],
+   "Type": "Account"
+}]]></ee:set-payload>
+         </ee:message>
+      </ee:transform>
+      <salesforce-composite:pre-query doc:name="Pre query" config-ref="Salesforce_Composite_Config">
+         <salesforce-composite:query >Select Name from Account WHERE Name LIKE '%:name %'
+                    </salesforce-composite:query>
+         <salesforce-composite:parameters ><![CDATA[#[output applicaton/java
+---
+{
+   "name" : "MyNewAccount"
+}]]]></salesforce-composite:parameters>
+      </salesforce-composite:pre-query>
+      <ee:transform doc:name="Transform Message" >
+         <ee:message >
+            <ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[
+   payload
+]]]></ee:set-payload>
+         </ee:message>
+      </ee:transform>
+		<salesforce-composite:execute-composite-batch doc:name="Execute composite batch" config-ref="Salesforce_Composite_Config"/>
+      <logger level="INFO" doc:name="Logger" doc:id="fb1ee801-42a0-4394-9ef4-c474bec26ac5" message="#[payload]" />
+		<ee:transform doc:name="Transform Message" >
+         <ee:message >
+            <ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+         </ee:message>
+      </ee:transform>
+   </flow>
+	<flow name="salesforceFlow" doc:id="c4676359-6fd0-48f1-9468-6fc75d1d0591">
+		<http:listener doc:name="POST /records" doc:id="8a5ca90f-10f0-4514-b56d-33243e71274c" config-ref="HTTP_Listener_config" path="/records" allowedMethods="POST"/>
+		<salesforce:create doc:name="Create Parent Accounts" doc:id="14e45597-b2ef-4e20-adc1-6baa995f3c36" config-ref="Salesforce_Config" type="Account" target="pAccountsRes">
+			<salesforce:records ><![CDATA[#[%dw 2.0
+output application/java
+---
+payload.records map (account,indexOfAccount) ->
+{
+	
+	Name: account.name,
+	Phone: account.phone,
+	Website: account.website,
+	NumberOfEmployees: account.numberOfEmployees as Number,
+	Industry: account.industry
+}]]]></salesforce:records>
+		</salesforce:create>
+		<salesforce:create doc:name="Create Parent Contacts" doc:id="9b22dab1-510c-4cf0-82d3-5aa9b45e938a" config-ref="Salesforce_Config" type="Contact" target="pContactsRes">
+			<salesforce:records ><![CDATA[#[%dw 2.0
+output application/java
+---
+flatten (payload.records map ((account,indexOfAccount) ->
+
+(account.contacts.records map ((contact, indexOfContact) -> 
+{
+	AccountId: vars.pAccountsRes[indexOfAccount].id,
+	LastName: contact.lastName,
+	Email: contact.email,
+	Title: contact.title
+}))
+))]]]></salesforce:records>
+		</salesforce:create>
+		<salesforce:create type="Account" doc:name="Create Child Accounts" doc:id="c3b778cb-e02b-49ca-8c8e-a22b412b53d0" config-ref="Salesforce_Config" target="cAccountsRes">
+			<salesforce:records ><![CDATA[#[%dw 2.0
+output application/json
+---
+flatten (payload.records filter $.childAccounts.records != null map ((account,indexOfAccount) ->
+account.childAccounts.records map ((childAccount, indexOfChildAccount) -> 
+{
+	ParentId: vars.pAccountsRes[indexOfAccount].id,
+	Name: childAccount.name,
+	Phone: childAccount.phone,
+	Website: childAccount.website,
+	NumberOfEmployees: childAccount.numberOfEmployees as Number
+})
+))]]]></salesforce:records>
+		</salesforce:create>
+		<ee:transform doc:name="Aggregate Responses" doc:id="ac1d6975-0df3-46eb-887b-57fcaa94c277" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.pAccountsRes ++ vars.pContactsRes ++ vars.cAccountsRes]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

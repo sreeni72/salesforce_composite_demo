@@ -1,0 +1,15 @@
+{
+    "batchRequests": [
+        {
+            "method": "PATCH",
+            "url": "/services/data/v50.0/sobjects/Account/0017F00002h6BAjQAM",
+            "richInput": {
+                "Name": "Azure Offerings"
+            }
+        },
+        {
+            "method": "GET",
+            "url": "/services/data/v50.0/sobjects/Account/0017F00002h6BAjQAM?fields=Name,BillingPostalCode"
+        }
+    ]
+}

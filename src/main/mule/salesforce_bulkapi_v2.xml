@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="salesforce_bulkapi_v2Flow" doc:id="fa25cb36-f33d-4923-b74f-9a43baae45a9" >
+		<http:listener doc:name="Listener" doc:id="5d8d1f15-1bc3-4e1e-821d-05cb15e59c80" config-ref="HTTP_Listener_config" path="/bulk"/>
+		<file:read doc:name="Read" doc:id="ba38268d-05a2-41f9-8b49-2f8e479b4f2d" path="/Users/ankurparashar/Desktop/Contact.csv">
+			<repeatable-in-memory-stream />
+		</file:read>
+		<salesforce:create-job-bulk-api-v2 doc:name="Create job bulk api v 2" doc:id="bf908f5f-03c6-436b-8c11-91101cd1f695" config-ref="Salesforce_Config" objectType="Contact" operation="insert" lineEnding="CRLF"/>
+		<logger level="INFO" doc:name="Logger" doc:id="468f9adc-0e32-409c-bad1-f00b0ed65233" message="#[output json --- payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="73c9232d-33b6-41c1-8dd3-30562eb2c327" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

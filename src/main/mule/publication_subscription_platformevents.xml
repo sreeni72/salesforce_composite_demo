@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="publishPlatformEventsFlow" doc:id="f748684c-038a-473c-a6de-1f9011e2ab13" >
+		<http:listener doc:name="Listener" doc:id="cd0ff24c-019e-41e4-b6f9-31dc2803d937" config-ref="HTTP_Listener_config" path="/publishplatformevents"/>
+		<ee:transform doc:name="Transform Message" doc:id="3d397c3b-11bd-4880-8ddd-16001eeb3fd2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"Name__c": "ABC"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:publish-platform-event-message doc:name="Publish platform event message" doc:id="8c3a5779-f09c-4a3c-98d3-68468e736410" config-ref="Salesforce_Config" platformEventName="test__e">
+			<salesforce:platform-event-messages ><![CDATA[#[[payload]]]]></salesforce:platform-event-messages>
+		</salesforce:publish-platform-event-message>
+		<ee:transform doc:name="Transform Message" doc:id="f206dc39-298f-4343-b833-7d05bc8ba458" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="20b85b2e-1396-4aca-b3d1-64cac3746793" message="#[payload]"/>
+	</flow>
+	<flow name="subscribePlatformEventsFlow" doc:id="a41a0e63-5a91-49e1-98b5-8079ccd237d3" >
+		<salesforce:subscribe-channel-listener streamingChannel="/event/test__e" doc:name="Subscribe channel listener" doc:id="819969a6-d466-4f40-8b2f-70a078f26120" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="d532227c-018e-4cef-bb5e-214b60cd7b7e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="4ffe657c-a108-4845-9840-c8e83a8c6829" message="#[payload]"/>
+	</flow>
+</mule>

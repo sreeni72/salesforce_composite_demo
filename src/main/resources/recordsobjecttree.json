@@ -1,0 +1,78 @@
+{
+    "records": [
+        {
+            "attributes": {
+                "objectType": "Account",
+                "referenceId": "ref1"
+            },
+            "name": "sampleAccount1",
+            "phone": "1234567890",
+            "website": "www.salesforce.com",
+            "numberOfEmployees": "100",
+            "industry": "Banking",
+            "contacts": {
+                "records": [
+                    {
+                        "attributes": {
+                            "objectType": "Contact",
+                            "referenceId": "ref2"
+                        },
+                        "lastName": "Smith",
+                        "title": "President",
+                        "email": "sample@salesforce.com"
+                    },
+                    {
+                        "attributes": {
+                            "objectType": "Contact",
+                            "referenceId": "ref3"
+                        },
+                        "lastName": "Evans",
+                        "title": "Vice President",
+                        "email": "sample@salesforce.com"
+                    }
+                ]
+            }
+        },
+        {
+            "attributes": {
+                "objectType": "Account",
+                "referenceId": "ref4"
+            },
+            "name": "SampleAccount2",
+            "phone": "1234567890",
+            "website": "www.salesforce.com",
+            "numberOfEmployees": "52000",
+            "industry": "Banking",
+            "childAccounts": {
+                "records": [
+                    {
+                        "attributes": {
+                            "objectType": "Account",
+                            "referenceId": "ref5"
+                        },
+                        "name": "SampleChildAccount2",
+                        "phone": "1234567890",
+                        "website": "www.salesforce.com",
+                        "numberOfEmployees": "100",
+                        "industry": "Banking"
+                    }
+                ]
+            },
+            "contacts": {
+                "records": [
+                    {
+                        "attributes": {
+                            "objectType": "Contact",
+                            "referenceId": "ref6"
+                        },
+                        "lastName": "Jones",
+                        "firstName": "Michelle",
+						"title": "President",
+                        "email": "sample@salesforce.com",
+                        "department": "Digital Apps"
+                    }
+                ]
+            }
+        }
+    ]
+}

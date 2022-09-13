@@ -1,0 +1,33 @@
+{
+    "compositeRequest": [
+        {
+            "url": "/services/data/v50.0/sobjects/Account/",
+            "body": {
+                "name": "Cloudy Consulting"
+            },
+            "method": "POST",
+            "referenceId": "reference_id_account_1"
+        },
+        {
+            "url": "/services/data/v50.0/sobjects/Contact/",
+            "body": {
+                "FirstName": "Nellie",
+                "LastName": "Cashman",
+                "AccountId": "@{reference_id_account_1.id}"
+            },
+            "method": "POST",
+            "referenceId": "reference_id_contact_1"
+        },
+        {
+            "url": "/services/data/v50.0/sobjects/Opportunity/",
+            "body": {
+                "CloseDate": "2024-05-22",
+                "StageName": "Prospecting",
+                "Name": "Opportunity 1",
+                "AccountId": "@{reference_id_account_1.id}"
+            },
+            "method": "POST",
+            "referenceId": "reference_id_opportunity_1"
+        }
+    ]
+}

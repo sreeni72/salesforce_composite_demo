@@ -1,0 +1,32 @@
+[{
+    "method": "POST",
+    "url": "/services/data/v50.0/composite/sobjects",
+    "body": {
+        "records": [
+            {
+                "attributes": {
+                    "type": "Account"
+                },
+                "Name": "Northern Trail Outfitters",
+                "BillingCity": "San Francisco"
+            },
+            {
+                "attributes": {
+                    "type": "Account"
+                },
+                "Name": "Easy Spaces",
+                "BillingCity": "Calgary"
+            }
+        ]
+    },
+    "referenceId": "newAccounts"
+},
+{
+    "method": "POST",
+    "url": "/services/data/v50.0/sObject/Contact",
+    "body": {
+        "FirstName": "John",
+        "LastName": "Smith"
+    },
+    "referenceId": "newContact"
+}]
